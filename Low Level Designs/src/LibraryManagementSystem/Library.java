@@ -3,21 +3,20 @@ package LibraryManagementSystem;
 import java.util.*;
 
 public class Library  {
-    static List<Book> books = new ArrayList<>();
-    static List<User> users = new ArrayList<>();
-//    static HashMap<Book, Boolean> available = new HashMap<>();
+    private List<Book> books = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
 
-    public static void addUser(int userId, String name){
+    public void addUser(int userId, String name){
         System.out.println("Welcome "+name+"! Your Registration "+"[USER_ID: "+userId +"] is done...");
         User user= new User(userId, name);
         users.add(user);
     }
 
-    public static boolean addBorrowedBooks(Book book, User user){
-        if(!book.isAvailable()){
+    public boolean addBorrowedBooks(Book book, User user){
+        if(book.isAvailable()){
             if(user.borrowedBooks.size()<3){
                 user.borrowedBooks.add(book);
-                boolean b = !book.isAvailable();
+                book.setAvailable(false);
                 return true;
             }
             else return false;
@@ -28,7 +27,7 @@ public class Library  {
         }
     }
 
-    public static void showBorrowedBooks(User user){
+    public void showBorrowedBooks(User user){
         if(!user.borrowedBooks.isEmpty()){
             for(int i=0;i<user.borrowedBooks.size();i++){
                 String title = user.borrowedBooks.get(i).getTitle();
@@ -38,12 +37,14 @@ public class Library  {
         } else System.out.println("Your account has no records of books...");
     }
 
-    public static void addBooks(String title, String author, boolean isAvailable){
+    public void addBooks(String title, String author, boolean isAvailable){
         System.out.println("New Book Added! "+"title: "+title+" by author "+author+" is now available!");
         books.add(new Book(title, author, isAvailable));
     }
 
     public static void main(String[] arg) {
+
+        Library myLib= new Library();
         System.out.println("Welcome to Library!");
         System.out.println("1. Register as user");
         System.out.println("2. Borrow a book and register");
@@ -62,21 +63,22 @@ public class Library  {
                 case 1:
                     System.out.println("Enter your userId: ");
                     int userId = sc.nextInt();
+                    sc.nextLine();
                     System.out.println("Enter your name: ");
-                    String name = sc.next();
-                    addUser(userId, name);
+                    String name = sc.nextLine();
+                    myLib.addUser(userId, name);
                     break;
                 case 2:
-                    if(books.isEmpty()) System.out.println("No books available now...");
+                    if(myLib.books.isEmpty()) System.out.println("No books available now...");
                     else{
                         System.out.println("Pick a Book from below...");
-                        for (Book book : books) System.out.println(book.getTitle());
+                        for (Book book : myLib.books) System.out.println(book.getTitle());
                         boolean found= false;
                         Book bookNeeded= null;
-                        while(!found){sc.nextLine();
-                        String titleNeed = sc.nextLine();
-                            for(Book book: books){
-                                if(Objects.equals(book.getTitle(), titleNeed)){
+                        while(!found){
+                            String titleNeed = sc.nextLine();
+                            for(Book book: myLib.books){
+                                if(book.getTitle().equals(titleNeed)){
                                     found= true;
                                     bookNeeded= book;
                                     System.out.println("Book found!: "+ book.getTitle());
@@ -87,14 +89,18 @@ public class Library  {
                         }
                         System.out.println("Enter User name: ");
                         String username = sc.nextLine();
-                        sc.nextLine();
-                        for(User user: users){
-                            if(Objects.equals(user.getName(), username)){
-                                if(addBorrowedBooks(bookNeeded, user)) System.out.println("Successfully Book added to your Account!");
+                        boolean founduser= false;
+                        for(User user: myLib.users){
+                            if(user.getName().equals(username)){
+                                if(myLib.addBorrowedBooks(bookNeeded, user)){
+                                    founduser= true;
+                                    System.out.println("Successfully Book added to your Account!");
+                                }
                                 else System.out.println("Your Account already holds maximum no. of books...");
+                                break;
                             }
-                            else System.out.println("User not found!");
                         }
+                        if(!founduser)System.out.println("User not found!");
                     }
                     break;
                 case 3:
@@ -103,40 +109,45 @@ public class Library  {
                     String title = sc.nextLine();
                     System.out.println("Enter book author: ");
                     String author = sc.nextLine();
-                    addBooks(title, author, false);
+                    myLib.addBooks(title, author, true);
                     break;
                 case 4:
                     System.out.println("Enter User name: ");
                     sc.nextLine();
                     String username = sc.nextLine();
-                    for(User user: users){
-                        if(Objects.equals(user.getName(), username)){
-                            showBorrowedBooks(user);
-                        }else System.out.println("User not found...");
+                    boolean founduser= false;
+                    for(User user: myLib.users){
+                        if(user.getName().equals(username)){
+                            founduser= true;
+                            myLib.showBorrowedBooks(user);
+                            break;
+                        }
                     }
+                    if(!founduser)System.out.println("User not found!");
                     break;
                 case 5:
-                    if(users.isEmpty()) System.out.println("No user have registered!");
+                    if(myLib.users.isEmpty()) System.out.println("No user have registered!");
                     else {
                         System.out.println("Here the list of Users in library...");
                         int sno = 0;
-                        for (User user : users) {
+                        for (User user : myLib.users) {
                             sno++;
-                            System.out.println(sno + ". " + "User ID: " + user.getUserId() + "Username:  " + user.getName());
+                            System.out.println(sno + ". " + "User ID: " + user.getUserId() + ", Username:  " + user.getName());
                         }
                     }
                     break;
                 case 6:
-                    if(books.isEmpty()) System.out.println("No books have added to the library!");
+                    if(myLib.books.isEmpty()) System.out.println("No books have added to the library!");
                     else{
                         int sno=0;
-                        for(Book book: books){
+                        for(Book book: myLib.books){
                             sno++;
                             System.out.println(sno+". "+"Book Name: "+book.getTitle()+" Author: "+book.getAuthor());
                         }
                     }
                     break;
                 case 7:
+                    System.out.println("Goodbye! Please visit again.");
                     off = true;
                     break;
             }
